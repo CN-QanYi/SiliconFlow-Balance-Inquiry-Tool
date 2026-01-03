@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SiliconFlow 余额查询</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            color: #555;
+            margin-bottom: 8px;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 25px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 15px;
+            display: none;
+            animation: slideIn 0.4s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result.show {
+            display: block;
+        }
+
+        .result-title {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 15px;
+            font-weight: 600;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            color: #666;
+            font-weight: 500;
+        }
+
+        .result-value {
+            color: #333;
+            font-weight: 600;
+        }
+
+        .result-value.balance {
+            color: #667eea;
+            font-size: 18px;
+        }
+
+        .error {
+            margin-top: 20px;
+            padding: 15px;
+            background: #fee;
+            border-left: 4px solid #f44;
+            border-radius: 8px;
+            color: #c33;
+            display: none;
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .error.show {
+            display: block;
+        }
+
+        .loading {
+            text-align: center;
+            color: #667eea;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            color: #1565c0;
+        }
+
+        .info-box a {
+            color: #1565c0;
+            text-decoration: underline;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 30px 20px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 SiliconFlow 余额查询</h1>
+        <p class="subtitle">快速查询您的账户余额信息</p>
+
+        <div class="info-box">
+            💡 <strong>提示：</strong>请输入您的 SiliconFlow API 密钥。
+            如果还没有密钥，请访问 <a href="https://siliconflow.cn" target="_blank">SiliconFlow官网</a> 获取。
+        </div>
+
+        <form id="balanceForm">
+            <div class="input-group">
+                <label for="apiKey">API 密钥</label>
+                <input 
+                    type="password" 
+                    id="apiKey" 
+                    name="apiKey" 
+                    placeholder="sk-xxxxxxxxxxxxxxxxxxxxxxxx"
+                    required
+                    autocomplete="off"
+                >
+            </div>
+
+            <button type="submit" id="submitBtn">
+                🔍 查询余额
+            </button>
+        </form>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>查询中，请稍候...</p>
+        </div>
+
+        <div class="error" id="error"></div>
+
+        <div class="result" id="result">
+            <div class="result-title">📊 账户信息</div>
+            <div class="result-item">
+                <span class="result-label">账户ID:</span>
+                <span class="result-value" id="accountId"></span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">账户名称:</span>
+                <span class="result-value" id="accountName"></span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">账户状态:</span>
+                <span class="result-value" id="accountStatus"></span>
+            </div>
+            <div class="result-title" style="margin-top: 20px;">💰 余额详情</div>
+            <div class="result-item">
+                <span class="result-label">可用余额:</span>
+                <span class="result-value balance" id="balance"></span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">充值余额:</span>
+                <span class="result-value balance" id="chargeBalance"></span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">总余额:</span>
+                <span class="result-value balance" id="totalBalance"></span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('balanceForm');
+        const loading = document.getElementById('loading');
+        const error = document.getElementById('error');
+        const result = document.getElementById('result');
+        const submitBtn = document.getElementById('submitBtn');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // 重置显示状态
+            loading.classList.remove('show');
+            error.classList.remove('show');
+            result.classList.remove('show');
+            
+            const apiKey = document.getElementById('apiKey').value.trim();
+            
+            if (!apiKey) {
+                showError('请输入API密钥');
+                return;
+            }
+
+            // 显示加载状态
+            loading.classList.add('show');
+            submitBtn.disabled = true;
+            submitBtn.textContent = '查询中...';
+
+            try {
+                const response = await fetch('/api/balance', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ api_key: apiKey })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showResult(data.data);
+                } else {
+                    showError(data.error || '查询失败，请重试');
+                }
+            } catch (err) {
+                showError('网络错误，请检查服务器是否启动: ' + err.message);
+            } finally {
+                loading.classList.remove('show');
+                submitBtn.disabled = false;
+                submitBtn.textContent = '🔍 查询余额';
+            }
+        });
+
+        function showResult(data) {
+            document.getElementById('accountId').textContent = data.id;
+            document.getElementById('accountName').textContent = data.name;
+            document.getElementById('accountStatus').textContent = data.status;
+            document.getElementById('balance').textContent = `¥${data.balance}`;
+            document.getElementById('chargeBalance').textContent = `¥${data.chargeBalance}`;
+            document.getElementById('totalBalance').textContent = `¥${data.totalBalance}`;
+            
+            result.classList.add('show');
+        }
+
+        function showError(message) {
+            error.textContent = '❌ ' + message;
+            error.classList.add('show');
+        }
+    </script>
+</body>
+</html>
